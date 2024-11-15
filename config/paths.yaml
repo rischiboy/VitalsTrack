@@ -1,0 +1,31 @@
+train:
+  # Raw data files used as inputs for training and testing
+  train_features: "data/raw/train_features.csv"  # Training features data file
+  train_labels: "data/raw/train_labels.csv"  # Training labels data file
+
+  # Aggregated and processed data for training a predictive model
+  group_data_file: "data/processed/group_data.csv"  # Grouped time series data of patients
+  stat_file: "data/processed/stat_file.csv"         # Categorical age group statistics
+  imputed_file: "data/processed/imputed_data.csv"   # Imputed missing data using NN approach
+  min_max_imputed_file: "data/processed/min_max_imputed_data.csv"
+
+  # Final processed data for training
+  final_train_file: "data/processed/final_features.csv"
+
+test:
+  test_features: "data/raw/test_features.csv"  # Testing features data file
+  # Processed test files with similar transformations as training data for consistency in testing
+  test_group_data_file: "data/processed/test_group_data.csv"
+  test_stat_file: "data/processed/test_stat_file.csv"
+  test_imputed_file: "data/processed/test_imputed_data.csv"
+  test_min_max_imputed_file: "data/processed/test_min_max_imputed_data.csv"
+
+  # Final processed data for testing
+  final_test_file: "data/processed/final_test_features.csv"
+
+# Feature Mask for feature selection
+clf_mask_file: "data/processed/clf_feature_mask.csv"
+regr_mask_file: "data/processed/regr_feature_mask.csv"
+
+# Path to save the predictions
+predictions_file: "data/results/predictions.csv"

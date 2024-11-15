@@ -1,0 +1,48 @@
+clf_model: "RandomForestClassifier"     # Choose between "SVC" or "RandomForestClassifier"
+regr_model: "KernelRidge"      # Choose between "Ridge" or "KernelRidge"
+
+# Path to save the predictions
+predictions_file: "data/results/predictions.csv"
+
+# Random seed for reproducibility
+random_seed: 42
+
+# Classifier hyperparameters
+SVC:
+  C: 1.0
+  kernel: "rbf"
+  gamma: "scale"
+  tol: 1e-3
+  class_weight: "balanced"
+
+RandomForestClassifier:
+  n_estimators: 200
+  criterion: "gini"
+  max_depth: 32
+  class_weight: "balanced"
+  min_samples_split: 2
+  min_samples_leaf: 16
+
+
+# Regressor hyperparameters
+Ridge:
+  alpha: 10.0
+  copy_X: True
+  tol: 1e-4
+  solver: "auto"
+
+KernelRidge:
+  alpha: 1.0
+  kernel: "rbf"
+  gamma: 0.01
+
+# Cross-validation parameters
+cv_clf:
+  cv: 5
+  scoring: "roc_auc"
+  n_jobs: 2
+
+cv_regr:
+  cv: 5
+  scoring: "r2"
+  n_jobs: 2
