@@ -6,6 +6,7 @@ from train import *
 import preprocessing
 import yaml
 import pandas as pd
+import joblib
 
 
 def classification_task(
@@ -17,6 +18,7 @@ def classification_task(
     clf_model: str,
     clf_params: Dict,
     cv_clf_params: Dict,
+    model_out_dir: str,
 ) -> Dict:
 
     clf_predictions = {}
@@ -39,7 +41,7 @@ def classification_task(
                 y_train[label],
                 vital=label,
                 cv_score=cv_clf_params,
-                **clf_params
+                **clf_params,
             )
         else:
             clf = train_svc(
@@ -47,13 +49,16 @@ def classification_task(
                 y_train[label],
                 vital=label,
                 cv_score=cv_clf_params,
-                **clf_params
+                **clf_params,
             )
 
         # Make predictions
         y_pred_clf = clf.predict(norm_X_test)
 
         clf_predictions[label] = y_pred_clf
+
+        # Save the model
+        joblib.dump(clf, f"{model_out_dir}/{label}.joblib")
 
     return clf_predictions
 
@@ -67,6 +72,7 @@ def regression_task(
     regr_model: str,
     regr_params: Dict,
     cv_regr_params: Dict,
+    model_out_dir: str,
 ) -> Dict:
 
     regr_predictions = {}
@@ -94,7 +100,7 @@ def regression_task(
             model=regr_model,
             grid_cv=None,
             cv_score=cv_regr_params,
-            **regr_params
+            **regr_params,
         )
 
         # Make predictions
@@ -104,6 +110,9 @@ def regression_task(
         y_pred_regr = scaler.inverse_transform(norm_y_pred_regr)
 
         regr_predictions[label] = y_pred_regr.flatten()
+
+        # Save the model
+        joblib.dump(regr, f"{model_out_dir}/{label}.joblib")
 
     return regr_predictions
 
@@ -159,6 +168,10 @@ if __name__ == "__main__":
     clf_labels = labels[:11]
     regr_labels = labels[11:]
 
+    # Create the output directory for the models
+    clf_model_dir = paths["models"]["clf"] + "/" + clf_model
+    regr_model_dir = paths["models"]["regr"] + "/" + regr_model
+
     # CLASSIFICATION
     clf_predictions = classification_task(
         X_train,
@@ -169,7 +182,11 @@ if __name__ == "__main__":
         clf_model,
         clf_params,
         cv_clf_params,
+        clf_model_dir,
     )
+
+    clf_predictions_df = pd.DataFrame(clf_predictions)
+    clf_predictions_df.to_csv(paths["predictions"]["clf"], index=False)
 
     # REGRESSION
     regr_predictions = regression_task(
@@ -181,10 +198,14 @@ if __name__ == "__main__":
         regr_model,
         regr_params,
         cv_regr_params,
+        regr_model_dir,
     )
+
+    regr_predictions_df = pd.DataFrame(regr_predictions)
+    regr_predictions_df.to_csv(paths["predictions"]["regr"], index=False)
 
     predictions = {**clf_predictions, **regr_predictions}
 
     # Save the predictions
     results_df = pd.concat([results_df, pd.DataFrame(predictions)], axis=1)
-    results_df.to_csv(paths["predictions_file"], index=False)
+    results_df.to_csv(paths["predictions"]["final"], index=False)

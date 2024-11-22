@@ -7,10 +7,11 @@ import ast
 import math
 import os
 import random
-from typing import List
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 import yaml
 
 from scipy.stats import linregress
@@ -286,20 +287,21 @@ def build_features(
 
     grouped_data = grouped_data.agg(**features).reset_index()
 
-    imputed_features = impute_data(grouped_data, stat_data)
-    imputed_features.to_csv(out_file, index=False)
+    # Impute missing values with the statistics of the corresponding age group
+    extracted_featuers = impute_data(grouped_data, stat_data)
+    extracted_featuers.to_csv(out_file, index=False)
 
-    return
+    return extracted_featuers
 
 
-def generate_files_from_data(
-    features_file: str,
-    group_data_file: str,
-    stat_file: str,
-    imputed_file: str,
-    min_max_imputed_file: str,
-    final_features_file: str,
-) -> None:
+def generate_files_from_data(path_dict: Dict) -> None:
+
+    features_file = path_dict["features"]
+    stat_file = path_dict["stat"]
+    # group_data_file = path_dict["group_data"]
+    # imputed_file = path_dict["imputed"]
+    # min_max_imputed_file = path_dict["min_max_imputed"]
+    final_features_file = path_dict["final_features"]
 
     # if not os.path.isfile(group_data_file):
     #     group_series_data(features_file, group_data_file)
@@ -346,10 +348,56 @@ def generate_files_from_data(
     #             parsed_group_data, stat_data, min_max_imputed_file, quantile_range
     #         )
 
-    features = pd.read_csv(features_file)
+    raw_features = pd.read_csv(features_file)
     stat_data = pd.read_csv(stat_file)
 
-    build_features(data=features, stat_data=stat_data, out_file=final_features_file)
+    extracted_features = build_features(
+        data=raw_features, stat_data=stat_data, out_file=final_features_file
+    )
+
+    return
+
+
+def split_data(
+    data: pd.DataFrame, labels: pd.DataFrame, split: float, out_files: Dict
+) -> None:
+    if os.path.isfile(out_files["X_val"]):
+        print("Files already exist. Skipping split.")
+        return
+
+    n_windows = len(data) // WINDOW_SIZE
+
+    # Reduce the data by taking the first data point of the series in order to split the data
+    reduced_data = [data.iloc[i * WINDOW_SIZE].values for i in range(n_windows)]
+    reduced_data = pd.DataFrame(reduced_data, columns=data.columns)
+
+    # Split the data into training and validation sets
+    X_train, X_val, y_train, y_val = train_test_split(
+        reduced_data, labels, test_size=split, random_state=SEED
+    )
+
+    # Expand the features back to include all 12 time steps for each selected index
+    X_train_expanded = []
+    X_test_expanded = []
+    for idx in X_train.index:
+        start = idx * WINDOW_SIZE
+        end = (idx + 1) * WINDOW_SIZE
+        X_train_expanded.append(data.iloc[start:end])
+
+    for idx in X_val.index:
+        start = idx * WINDOW_SIZE
+        end = (idx + 1) * WINDOW_SIZE
+        X_test_expanded.append(data.iloc[start:end])
+
+    X_train = pd.concat(X_train_expanded)
+    X_val = pd.concat(X_test_expanded)
+
+    X_train.to_csv(out_files["X_train"], index=False)
+    X_val.to_csv(out_files["X_val"], index=False)
+    y_train.to_csv(out_files["y_train"], index=False)
+    y_val.to_csv(out_files["y_val"], index=False)
+
+    print("Data split successfully into train and validation.")
 
     return
 
@@ -360,31 +408,41 @@ def main():
     with open("config/paths.yaml", "r") as file:
         paths = yaml.safe_load(file)
 
-    # print(paths["train"])
+    with open("config/params.yaml", "r") as file:
+        params = yaml.safe_load(file)
+
+    global SEED
+    SEED = params["random_seed"]
+    print(f"Seed: {SEED}")
+
+    global TEST_SIZE
+    TEST_SIZE = params["test_size"]
+    print(f"Test size: {TEST_SIZE}")
+
+    # Load raw data
+    raw_features = pd.read_csv(paths["raw"]["features"])
+    raw_labels = pd.read_csv(paths["raw"]["labels"])
+
+    # Split the data into training and validation sets
+    files = {
+        "X_train": paths["train"]["features"],
+        "X_val": paths["val"]["features"],
+        "y_train": paths["train"]["labels"],
+        "y_val": paths["val"]["labels"],
+    }
+    split_data(raw_features, raw_labels, TEST_SIZE, files)
 
     # Generate files for training data
-    train_args = {
-        "features_file": paths["train"]["train_features"],
-        "group_data_file": paths["train"]["group_data_file"],
-        "stat_file": paths["train"]["stat_file"],
-        "imputed_file": paths["train"]["imputed_file"],
-        "min_max_imputed_file": paths["train"]["min_max_imputed_file"],
-        "final_features_file": paths["train"]["final_train_file"],
-    }
+    train_files = paths["train"]
+    generate_files_from_data(train_files)
 
-    generate_files_from_data(**train_args)
+    # Generate files for validation data
+    val_files = paths["val"]
+    generate_files_from_data(val_files)
 
     # Generate files for test data
-    test_args = {
-        "features_file": paths["test"]["test_features"],
-        "group_data_file": paths["test"]["test_group_data_file"],
-        "stat_file": paths["test"]["test_stat_file"],
-        "imputed_file": paths["test"]["test_imputed_file"],
-        "min_max_imputed_file": paths["test"]["test_min_max_imputed_file"],
-        "final_features_file": paths["test"]["final_test_file"],
-    }
-
-    generate_files_from_data(**test_args)
+    test_files = paths["test"]
+    generate_files_from_data(test_files)
 
 
 if __name__ == "__main__":
@@ -396,5 +454,11 @@ if __name__ == "__main__":
 
     AGE_BINS = [14, 30, 50, 70, 100]
     AGG_FUNCTIONS = ["min", "max", "mean", "std"]
+
+    # Train features are series of length 12
+    WINDOW_SIZE = 12
+
+    SEED = 42
+    TEST_SIZE = 0.2
 
     main()
