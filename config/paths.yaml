@@ -53,6 +53,12 @@ models:
 
 # Path to save the predictions
 predictions:
-  clf: "data/results/clf_predictions_SVC.csv"
+  clf: "data/results/clf_predictions.csv"
   regr: "data/results/regr_predictions.csv"
   final: "data/results/predictions.csv"
+
+# Path to save the evaluation metrics
+evaluation:
+  svc: "data/results/svc_metrics.csv"
+  random_forest: "data/results/random_forest_metrics.csv"
+  kernel_ridge: "data/results/kernel_ridge_metrics.csv"
