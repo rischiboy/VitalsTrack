@@ -1,18 +1,18 @@
-clf_model: "RandomForestClassifier"     # Choose between "SVC" or "RandomForestClassifier"
-regr_model: "KernelRidge"      # Choose between "Ridge" or "KernelRidge"
-
-# Path to save the predictions
-predictions_file: "data/results/predictions.csv"
+clf_model: "SVC"     # Choose between "SVC" or "RandomForestClassifier"
+regr_model: "KernelRidge"               # Choose between "Ridge" or "KernelRidge"
 
 # Random seed for reproducibility
 random_seed: 42
+
+# Train test split
+test_size: 0.2
 
 # Classifier hyperparameters
 SVC:
   C: 1.0
   kernel: "rbf"
   gamma: "scale"
-  tol: 1e-3
+  tol: 0.001
   class_weight: "balanced"
 
 RandomForestClassifier:
@@ -28,7 +28,7 @@ RandomForestClassifier:
 Ridge:
   alpha: 10.0
   copy_X: True
-  tol: 1e-4
+  tol: 0.0001
   solver: "auto"
 
 KernelRidge:

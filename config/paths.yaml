@@ -1,31 +1,58 @@
+raw:
+  features: "data/raw/train_features.csv"
+  labels: "data/raw/train_labels.csv"
+
 train:
   # Raw data files used as inputs for training and testing
-  train_features: "data/raw/train_features.csv"  # Training features data file
-  train_labels: "data/raw/train_labels.csv"  # Training labels data file
+  features: "data/train/train_features.csv"  # Training features data file
+  labels: "data/train/train_labels.csv"  # Training labels data file
 
   # Aggregated and processed data for training a predictive model
-  group_data_file: "data/processed/group_data.csv"  # Grouped time series data of patients
-  stat_file: "data/processed/stat_file.csv"         # Categorical age group statistics
-  imputed_file: "data/processed/imputed_data.csv"   # Imputed missing data using NN approach
-  min_max_imputed_file: "data/processed/min_max_imputed_data.csv"
+  group_data: "data/train/group_data.csv"  # Grouped time series data of patients
+  stat: "data/train/stat_file.csv"         # Categorical age group statistics
+  imputed: "data/train/imputed_data.csv"   # Imputed missing data using NN approach
+  min_max_imputed: "data/train/min_max_imputed_data.csv"
 
   # Final processed data for training
-  final_train_file: "data/processed/final_features.csv"
+  final_features: "data/train/final_features.csv"
 
+# Validation data files (Split from training data and not used in training)
+val:
+  features: "data/val/val_features.csv"  # Validation features data file
+  labels: "data/val/val_labels.csv"      # Validation labels data file
+
+  # Processed validation files with similar transformations as training data for consistency in validation
+  group_data: "data/val/val_group_data.csv"
+  stat: "data/val/val_stat_file.csv"
+  imputed: "data/val/val_imputed_data.csv"
+  min_max_imputed: "data/val/val_min_max_imputed_data.csv"
+
+  # Final processed data for validation
+  final_features: "data/val/final_val_features.csv"
+
+# Testing data files
 test:
-  test_features: "data/raw/test_features.csv"  # Testing features data file
+  features: "data/raw/test_features.csv"  # Testing features data file
   # Processed test files with similar transformations as training data for consistency in testing
-  test_group_data_file: "data/processed/test_group_data.csv"
-  test_stat_file: "data/processed/test_stat_file.csv"
-  test_imputed_file: "data/processed/test_imputed_data.csv"
-  test_min_max_imputed_file: "data/processed/test_min_max_imputed_data.csv"
+  group_data: "data/test/test_group_data.csv"
+  stat: "data/test/test_stat_file.csv"
+  imputed: "data/test/test_imputed_data.csv"
+  min_max_imputed: "data/test/test_min_max_imputed_data.csv"
 
   # Final processed data for testing
-  final_test_file: "data/processed/final_test_features.csv"
+  final_features: "data/test/final_test_features.csv"
 
 # Feature Mask for feature selection
-clf_mask_file: "data/processed/clf_feature_mask.csv"
-regr_mask_file: "data/processed/regr_feature_mask.csv"
+clf_mask_file: "data/train/clf_feature_mask.csv"
+regr_mask_file: "data/train/regr_feature_mask.csv"
+
+# Path to save the trained models
+models:
+  clf: "models/classification"
+  regr: "models/regression"
 
 # Path to save the predictions
-predictions_file: "data/results/predictions.csv"
+predictions:
+  clf: "data/results/clf_predictions_SVC.csv"
+  regr: "data/results/regr_predictions.csv"
+  final: "data/results/predictions.csv"
