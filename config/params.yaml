@@ -14,6 +14,7 @@ SVC:
   gamma: "scale"
   tol: 0.001
   class_weight: "balanced"
+  probability: True
 
 RandomForestClassifier:
   n_estimators: 200

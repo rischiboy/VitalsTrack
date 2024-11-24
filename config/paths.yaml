@@ -53,7 +53,7 @@ models:
 
 # Path to save the predictions
 predictions:
-  clf: "data/results/clf_predictions.csv"
+  clf: "data/results/clf_predictions_SVC.csv"
   regr: "data/results/regr_predictions.csv"
   final: "data/results/predictions.csv"
 

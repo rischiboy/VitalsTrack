@@ -137,9 +137,9 @@ if __name__ == "__main__":
     # Preprocess the data
     # preprocessing.main()
 
-    train_features = paths["train"]["final_train_file"]
-    train_labels = paths["train"]["train_labels"]
-    test_features = paths["test"]["final_test_file"]
+    train_features = paths["train"]["final_features"]
+    train_labels = paths["train"]["labels"]
+    test_features = paths["test"]["final_features"]
 
     clf_mask_file = paths["clf_mask_file"]
     regr_mask_file = paths["regr_mask_file"]
@@ -189,23 +189,23 @@ if __name__ == "__main__":
     clf_predictions_df.to_csv(paths["predictions"]["clf"], index=False)
 
     # REGRESSION
-    regr_predictions = regression_task(
-        X_train,
-        X_test,
-        y_train,
-        regr_mask,
-        regr_labels,
-        regr_model,
-        regr_params,
-        cv_regr_params,
-        regr_model_dir,
-    )
+    # regr_predictions = regression_task(
+    #     X_train,
+    #     X_test,
+    #     y_train,
+    #     regr_mask,
+    #     regr_labels,
+    #     regr_model,
+    #     regr_params,
+    #     cv_regr_params,
+    #     regr_model_dir,
+    # )
 
-    regr_predictions_df = pd.DataFrame(regr_predictions)
-    regr_predictions_df.to_csv(paths["predictions"]["regr"], index=False)
+    # regr_predictions_df = pd.DataFrame(regr_predictions)
+    # regr_predictions_df.to_csv(paths["predictions"]["regr"], index=False)
 
-    predictions = {**clf_predictions, **regr_predictions}
+    # predictions = {**clf_predictions, **regr_predictions}
 
-    # Save the predictions
-    results_df = pd.concat([results_df, pd.DataFrame(predictions)], axis=1)
-    results_df.to_csv(paths["predictions"]["final"], index=False)
+    # # Save the predictions
+    # results_df = pd.concat([results_df, pd.DataFrame(predictions)], axis=1)
+    # results_df.to_csv(paths["predictions"]["final"], index=False)
